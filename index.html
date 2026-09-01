@@ -496,6 +496,31 @@
   .switch-row input[type="checkbox"] {
     width: 16px; height: 16px; accent-color: #0891b2; cursor: pointer;
   }
+  .custom-size-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 4px;
+  }
+  .custom-size-row input[type="number"] {
+    width: 72px;
+    padding: 5px 8px;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    font-size: 13px;
+    background: #fff;
+    color: #0f172a;
+    -moz-appearance: textfield;
+    appearance: textfield;
+  }
+  .custom-size-row input[type="number"]::-webkit-outer-spin-button,
+  .custom-size-row input[type="number"]::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+  .custom-size-row .x { color: #64748b; font-size: 13px; }
+  .custom-size-row .cs-tip { color: #94a3b8; font-size: 11px; margin-left: 2px; }
+  .custom-size-row input:focus { outline: none; border-color: #0891b2; box-shadow: 0 0 0 2px rgba(8,145,178,.15); }
 
   /* 画廊网格 */
   .gallery-head {
@@ -767,6 +792,15 @@
             <label>遮罩（局部重绘，可选）</label>
             <input id="maskFile" type="file" accept="image/*">
             <div id="maskPreview" class="mask-row" style="margin-top:6px;"></div>
+          </div>
+          <div class="field" style="grid-column:1/-1; margin-top:2px;">
+            <label>自定义尺寸（宽 × 高，可选；留空则用上方预设）</label>
+            <div class="custom-size-row">
+              <input type="number" id="customSizeW" placeholder="宽" min="16" max="3840" step="16">
+              <span class="x">×</span>
+              <input type="number" id="customSizeH" placeholder="高" min="16" max="3840" step="16">
+              <span class="cs-tip">两格都填才生效</span>
+            </div>
           </div>
         </div>
         <div class="switch-row">
@@ -1366,6 +1400,16 @@ async function generateImage() {
   const imageCount = Math.max(1, Math.min(5, parseInt(document.getElementById('imageCount').value, 10) || 1));
   const selectedImageModel = document.getElementById('imageModel').value;
 let selectedImageSize = document.getElementById('imageSize').value;
+  // 自定义尺寸（高级选项）：宽高都填了则覆盖预设
+  const cw = document.getElementById('customSizeW');
+  const ch = document.getElementById('customSizeH');
+  if (cw && ch) {
+    const w = parseInt(cw.value, 10);
+    const h = parseInt(ch.value, 10);
+    if (w > 0 && h > 0) {
+      selectedImageSize = w + 'x' + h;
+    }
+  }
   // 参考图: 手动 URL + 上传列表合并 (最多 5 张), 单张传字符串, 多张传数组 (8001/adapter 均支持 image_url 数组)
   const manualRef = document.getElementById('imageRefUrl').value.trim();
   let refs = [];
