@@ -796,10 +796,10 @@
           <div class="field" style="grid-column:1/-1; margin-top:2px;">
             <label>自定义尺寸（宽 × 高，可选；留空则用上方预设）</label>
             <div class="custom-size-row">
-              <input type="number" id="customSizeW" placeholder="宽" min="16" max="3840" step="16">
+              <input type="number" id="customSizeW" placeholder="宽" min="512" max="3840" step="16">
               <span class="x">×</span>
-              <input type="number" id="customSizeH" placeholder="高" min="16" max="3840" step="16">
-              <span class="cs-tip">两格都填才生效</span>
+              <input type="number" id="customSizeH" placeholder="高" min="512" max="3840" step="16">
+              <span class="cs-tip">两格都填才生效，范围 512~3840</span>
             </div>
           </div>
         </div>
@@ -1400,14 +1400,15 @@ async function generateImage() {
   const imageCount = Math.max(1, Math.min(5, parseInt(document.getElementById('imageCount').value, 10) || 1));
   const selectedImageModel = document.getElementById('imageModel').value;
 let selectedImageSize = document.getElementById('imageSize').value;
-  // 自定义尺寸（高级选项）：宽高都填了则覆盖预设
+  // 自定义尺寸（高级选项）：宽高都填了则覆盖预设（钳制到 16~3840，并对齐 16 倍数，防止非法值透传上游）
   const cw = document.getElementById('customSizeW');
   const ch = document.getElementById('customSizeH');
   if (cw && ch) {
-    const w = parseInt(cw.value, 10);
-    const h = parseInt(ch.value, 10);
+    let w = parseInt(cw.value, 10);
+    let h = parseInt(ch.value, 10);
+    const clamp16 = (v) => Math.min(3840, Math.max(512, Math.round(v / 16) * 16));
     if (w > 0 && h > 0) {
-      selectedImageSize = w + 'x' + h;
+      selectedImageSize = clamp16(w) + 'x' + clamp16(h);
     }
   }
   // 参考图: 手动 URL + 上传列表合并 (最多 5 张), 单张传字符串, 多张传数组 (8001/adapter 均支持 image_url 数组)
